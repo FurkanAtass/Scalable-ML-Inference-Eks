@@ -1,3 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
 .venv
-.vscode
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+
+# Test files
 *.png
+
+# Documentation
+README.md
+
+# uv cache
+
+# Docker
+Dockerfile
+.dockerignore
