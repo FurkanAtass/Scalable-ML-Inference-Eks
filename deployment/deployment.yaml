@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swin-tiny-deployment
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: swin-tiny-app
+  template:
+    metadata:
+      labels:
+        app: swin-tiny-app
+    spec:
+      containers:
+      - name: swin-tiny-container
+        image: furkanatass/swin-tiny:v1
+        ports:
+        - containerPort: 8000
