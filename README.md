@@ -11,3 +11,7 @@
 * docker push <user name>>/<image name>:<tagname>
 
 minikube start -n 2 --memory 4400
+
+minikube service <service-name> --url 
+
+minikube tunnel
