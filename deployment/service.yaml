@@ -6,10 +6,13 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8000"
     prometheus.io/path: "/metrics"
+  labels:
+    app: swin-tiny-app
 spec:
   selector:
     app: swin-tiny-app
   ports:
-  - port: 8000
+  - name: "swin-tiny-port"
+    port: 8000
     targetPort: 8000
   type: LoadBalancer

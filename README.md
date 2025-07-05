@@ -20,6 +20,8 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 
 helm repo update
 
-kubectl port-forward services/prometheus-server 9092:80
+helm install prometheus prometheus-community/kube-prometheus-stack
+
+kubectl port-forward services/prometheus-kube-prometheus-prometheus 9091:9090
 
 where 9092 is reached from localhost and 80 is the shown port for service (kubectl get svc)

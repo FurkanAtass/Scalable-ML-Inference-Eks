@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: swin-tiny-container
-        image: furkanatass/swin-tiny:v1
+        image: furkanatass/swin-tiny:v3
         ports:
         - containerPort: 8000
