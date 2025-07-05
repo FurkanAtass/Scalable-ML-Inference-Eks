@@ -3,7 +3,7 @@ import httpx
 import sys
 import time
 
-API_URL = "http://192.168.49.2:30232/predict"  # LoadBalancer IP with standard port
+API_URL = "http://localhost:8000/predict"  # LoadBalancer IP with standard port
 
 async def send_request(client, image_path):
     with open(image_path, "rb") as f:
@@ -18,6 +18,7 @@ async def main(image_path, n):
     start_time = time.time()
     async with httpx.AsyncClient(timeout=60) as client:
         tasks = [send_request(client, image_path) for _ in range(n)]
+        print("Sending requests")
         await asyncio.gather(*tasks)
     end_time = time.time()
     print(f"Time taken: {end_time - start_time} seconds")
