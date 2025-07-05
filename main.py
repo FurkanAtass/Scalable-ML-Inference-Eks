@@ -8,6 +8,7 @@ from torchvision.transforms import Compose, Resize, ToTensor
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, Request, Response
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from concurrent.futures import ThreadPoolExecutor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = swin_t(weights=Swin_T_Weights.IMAGENET1K_V1).to(device)
@@ -18,11 +19,15 @@ transform = Compose([
 
 app = FastAPI()
 
+# Create a global thread pool for CPU-intensive operations
+thread_pool = ThreadPoolExecutor(max_workers=4)
+
 # Prometheus metrics
 REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
 REQUEST_DURATION = Histogram('http_request_duration_seconds', 'HTTP request duration in seconds', ['method', 'endpoint'])
 
-async def get_prediction(file: UploadFile):
+def run_prediction_sync(file: UploadFile):
+    """Synchronous prediction function to run in thread pool"""
     image = Image.open(file.file)
     input_tensor = transform(image).unsqueeze(0).to(device)
 
@@ -34,6 +39,12 @@ async def get_prediction(file: UploadFile):
     class_names = Swin_T_Weights.IMAGENET1K_V1.meta["categories"]
     predicted_class_name = class_names[predicted_class]
     return {"class": predicted_class_name}
+
+async def get_prediction(file: UploadFile):
+    # Run the heavy model operations in the global thread pool
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(thread_pool, run_prediction_sync, file)
+    return result
 
 @app.post("/predict")
 async def predict(file: UploadFile = File()):
