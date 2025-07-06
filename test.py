@@ -3,7 +3,7 @@ import httpx
 import sys
 import time
 
-API_URL = "http://192.168.49.2:31421/predict"  # LoadBalancer IP with standard port
+API_URL = "http://192.168.49.2:31878/predict"  # LoadBalancer IP with standard port
 
 async def send_request(client, image_path):
     with open(image_path, "rb") as f:
@@ -14,22 +14,26 @@ async def send_request(client, image_path):
         except Exception as e:
             print(f"Request failed: {e}")
 
-async def main(image_path, n):
+async def main(image_path, n, num_times=1):
     start_time = time.time()
     async with httpx.AsyncClient(timeout=60) as client:
-        tasks = [send_request(client, image_path) for _ in range(n)]
-        print("Sending requests")
-        await asyncio.gather(*tasks)
+        for _ in range(num_times):
+            tasks = [send_request(client, image_path) for _ in range(n)]
+            print("Sending requests")
+            await asyncio.gather(*tasks)
     end_time = time.time()
     print(f"Time taken: {end_time - start_time} seconds")
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         image_path = "test_image.png"
         n = 1
+        num_times = 1
     elif len(sys.argv) == 2:
         n = int(sys.argv[1])
         image_path = "test_image.png"
+        num_times = 1
     else:
-        image_path = sys.argv[2]
+        image_path = "test_image.png"
+        num_times = int(sys.argv[2])
         n = int(sys.argv[1])
-    asyncio.run(main(image_path, n))
+    asyncio.run(main(image_path, n, num_times))
