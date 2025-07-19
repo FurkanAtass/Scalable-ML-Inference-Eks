@@ -15,14 +15,15 @@ async def send_request(client, image_path):
             print(f"Request failed: {e}")
 
 async def main(image_path, n, num_times=1):
-    start_time = time.time()
+    
     async with httpx.AsyncClient(timeout=60) as client:
         for _ in range(num_times):
+            start_time = time.time()
             tasks = [send_request(client, image_path) for _ in range(n)]
             print("Sending requests")
             await asyncio.gather(*tasks)
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time} seconds")
+            end_time = time.time()
+            print(f"Time taken: {end_time - start_time} seconds")
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         image_path = "test_image.png"
