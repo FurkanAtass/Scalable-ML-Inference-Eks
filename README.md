@@ -34,3 +34,7 @@ avg(
   /
   clamp_min(rate(http_request_duration_seconds_count[2m]), 1)
 )
+
+helm repo add kedacore https://kedacore.github.io/charts  
+helm repo update
+helm install keda kedacore/keda
