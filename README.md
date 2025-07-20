@@ -52,3 +52,19 @@ https://docs.aws.amazon.com/eks/latest/userguide/install-awscli.html
 ## EKSCTL 
 
 https://eksctl.io/installation/
+
+
+
+
+## EKS
+
+1. create IAM role
+2. create cluster from console
+3. create kubeconfig
+ aws eks update-kubeconfig --region region-code --name my-cluster
+
+ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+ 
+4. cluster > access > IAM access entries > create access entry > enter IAM role generated
+5. cluster > access > IAM access entries > click your IAM arn:aws:iam::705121141507:user/FurkanIAM 
+      > Access policies > add access policy > add AmazonEKSAdminPolicy

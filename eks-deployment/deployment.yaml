@@ -17,3 +17,6 @@ spec:
         image: furkanatass/swin-tiny:v3
         ports:
         - containerPort: 8000
+        resources:
+          limits:
+            nvidia.com/gpu: 1
