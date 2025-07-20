@@ -10,6 +10,8 @@
 
 * docker push <user name>>/<image name>:<tagname>
 
+## Minikube
+
 minikube start -n 2 --memory 4400
 
 minikube service <service-name> --url 
@@ -38,3 +40,15 @@ avg(
 helm repo add kedacore https://kedacore.github.io/charts  
 helm repo update
 helm install keda kedacore/keda
+
+
+## AWS CLI
+
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+### Set up cli
+https://docs.aws.amazon.com/eks/latest/userguide/install-awscli.html
+
+## EKSCTL 
+
+https://eksctl.io/installation/

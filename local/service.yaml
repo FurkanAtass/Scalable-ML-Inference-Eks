@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: swin-tiny-service
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+  labels:
+    app: swin-tiny-app
+spec:
+  selector:
+    app: swin-tiny-app
+  ports:
+  - name: "swin-tiny-port"
+    port: 8000
+    targetPort: 8000
+  type: LoadBalancer
+  # Ensure proper load balancing May not be needed
+  sessionAffinity: None  # Disable session affinity
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 0  # No timeout for session affinity 
