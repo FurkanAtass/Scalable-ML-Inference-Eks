@@ -64,7 +64,24 @@ https://eksctl.io/installation/
  aws eks update-kubeconfig --region region-code --name my-cluster
 
  kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
- 
+
 4. cluster > access > IAM access entries > create access entry > enter IAM role generated
 5. cluster > access > IAM access entries > click your IAM arn:aws:iam::705121141507:user/FurkanIAM 
       > Access policies > add access policy > add AmazonEKSAdminPolicy
+
+
+## Terraform
+
+Install terraform cli from
+  https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+
+terraform fmt -> to chech the file formats
+terraform init -> reads all the files and download the resources from terraform registry and save to files
+terraform validate -> validates the files syntax etc.
+terraform plan -> check what will be the impact of the execution
+terraform apply -> apply the file and ask to approve
+terraform destroy -> destroy all resources
+
+terraform keeps the states for us in .tfstate file
+
+terraform provisioners used to execute scripts, add files for yout infrastructure. their state will not handled by terraform.
