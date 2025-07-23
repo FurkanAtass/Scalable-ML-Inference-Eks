@@ -67,7 +67,7 @@ https://eksctl.io/installation/
 
 4. cluster > access > IAM access entries > create access entry > enter IAM role generated
 5. cluster > access > IAM access entries > click your IAM arn:aws:iam::705121141507:user/FurkanIAM 
-      > Access policies > add access policy > add AmazonEKSAdminPolicy
+      > Access policies > add access policy > add AmazonEKSAdminPolicy and AmazonEKSClusterAdminPolicy
 
 
 ## Terraform
@@ -85,3 +85,5 @@ terraform destroy -> destroy all resources
 terraform keeps the states for us in .tfstate file
 
 terraform provisioners used to execute scripts, add files for yout infrastructure. their state will not handled by terraform.
+
+For you services in terraform, check the requirements for the aws and choose the matched version for all services and their versions.
