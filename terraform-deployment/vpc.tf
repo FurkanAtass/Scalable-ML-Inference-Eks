@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-aws-modules/vpc/aws"
   version = "5.8.1"
 
   name = var.vpc_name
@@ -14,20 +14,20 @@ module "vpc" {
 
   enable_vpn_gateway = true
 
-# Add the necessary tags to subnets
-# https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html
+  # Add the necessary tags to subnets
+  # https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html
   public_subnet_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/elb" = 1
+    "kubernetes.io/role/elb"                    = 1
   }
 
   private_subnet_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb" = 1
+    "kubernetes.io/role/internal-elb"           = 1
   }
 
   tags = {
-    Terraform = "true"
+    Terraform   = "true"
     Environment = "dev"
   }
 }

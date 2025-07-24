@@ -4,4 +4,5 @@ launch.json
 __pycache__/
 *.pth
 *.png
+*jpg
 .DS_Store

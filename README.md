@@ -87,3 +87,11 @@ terraform keeps the states for us in .tfstate file
 terraform provisioners used to execute scripts, add files for yout infrastructure. their state will not handled by terraform.
 
 For you services in terraform, check the requirements for the aws and choose the matched version for all services and their versions.
+
+
+# TODO
+add auth to endpoint
+remove the single nat gateway which may prevent the pods that has pending state
+maybe deploy the cluster to aws ecr
+make prometheus ui reachable from outside the kubectl port-forward
+make load tests more

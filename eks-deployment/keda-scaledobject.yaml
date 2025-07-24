@@ -39,5 +39,5 @@ spec:
           /
           clamp_min(rate(http_request_duration_seconds_count[2m]), 1)
         )
-      threshold: "0.35"  
+      threshold: "0.020"  
     metricType: Value

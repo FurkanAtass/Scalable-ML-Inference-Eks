@@ -3,7 +3,7 @@ import httpx
 import sys
 import time
 
-API_URL = "http://192.168.49.2:31985/predict"  # LoadBalancer IP with standard port
+API_URL = "http://a28369d12205347b39ffaf82f13293ad-311156887.us-east-1.elb.amazonaws.com:8000/predict"  # LoadBalancer IP with standard port
 
 async def send_request(client, image_path):
     with open(image_path, "rb") as f:
