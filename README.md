@@ -22,7 +22,8 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 
 helm repo update
 
-helm install prometheus prometheus-community/kube-prometheus-stack
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --set prometheus.service.type=LoadBalancer
 
 kubectl port-forward services/prometheus-kube-prometheus-prometheus 9091:9090
 
@@ -90,8 +91,10 @@ For you services in terraform, check the requirements for the aws and choose the
 
 
 # TODO
-add auth to endpoint
 remove the single nat gateway which may prevent the pods that has pending state
-maybe deploy the cluster to aws ecr
 make prometheus ui reachable from outside the kubectl port-forward
+
+add auth to endpoint
+maybe deploy the cluster to aws ecr
 make load tests more
+node scaling test
