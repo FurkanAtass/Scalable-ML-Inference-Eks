@@ -15,3 +15,9 @@ variable "region" {
   default     = "us-east-1"
   description = "The region of the EKS cluster"
 }
+
+variable "iam_user_name" {
+  type        = string
+  default     = "Admin"
+  description = "The name of the IAM user"
+}

@@ -101,8 +101,9 @@ add auth to endpoint
 maybe deploy the cluster to aws ecr
 make load tests more
 node scaling test
+
 add the iam user name to variables
-make the loadbalancers to assecible by terraform (determine loadbalancers)
+make the loadbalancers to assecible by terraform (determine loadbalancers) may only needed for CI/CD pipeline
 
 helm repo add gpu-helm-charts \
   https://nvidia.github.io/dcgm-exporter/helm-charts
@@ -114,4 +115,4 @@ helm install \
     gpu-helm-charts/dcgm-exporter
 
 https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html
-https://github.com/NVIDIA/dcgm-exporter
+https://github.com/NVIDIA/dcgm-exporter 

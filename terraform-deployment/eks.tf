@@ -39,7 +39,7 @@ module "eks" {
 }
 
 data "aws_iam_user" "admin" {
-  user_name = "Admin"
+  user_name = var.iam_user_name
 }
 
 # Grant EKS cluster admin access via access entry
