@@ -94,10 +94,12 @@ helm uninstall prometheus and delete the k8s services before terraform destroy
 # TODO
 remove the single nat gateway which may prevent the pods that has pending state
 make prometheus ui reachable from outside the kubectl port-forward
+make the access policies from terraform
+terraform destroy not working
 
 add auth to endpoint
 maybe deploy the cluster to aws ecr
 make load tests more
 node scaling test
-terraform destroy not working
-make the access policies from terraform
+add the iam user name to variables
+make the loadbalancers to assecible by terraform (determine loadbalancers)
