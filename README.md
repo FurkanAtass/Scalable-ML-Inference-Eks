@@ -23,7 +23,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 
 helm install prometheus prometheus-community/kube-prometheus-stack \
-  --set prometheus.service.type=LoadBalancer
+  --set prometheus.service.type=LoadBalancer  
 
 kubectl port-forward services/prometheus-kube-prometheus-prometheus 9091:9090
 
@@ -62,7 +62,7 @@ https://eksctl.io/installation/
 1. create IAM role
 2. create cluster from console
 3. create kubeconfig
- aws eks update-kubeconfig --region region-code --name my-cluster
+aws eks update-kubeconfig --region us-east-1 --name swin-tiny-eks-cluster
 
  kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
 
@@ -89,6 +89,7 @@ terraform provisioners used to execute scripts, add files for yout infrastructur
 
 For you services in terraform, check the requirements for the aws and choose the matched version for all services and their versions.
 
+helm uninstall prometheus and delete the k8s services before terraform destroy
 
 # TODO
 remove the single nat gateway which may prevent the pods that has pending state
@@ -98,3 +99,5 @@ add auth to endpoint
 maybe deploy the cluster to aws ecr
 make load tests more
 node scaling test
+terraform destroy not working
+make the access policies from terraform
