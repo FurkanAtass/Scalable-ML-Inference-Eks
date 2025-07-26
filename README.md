@@ -103,3 +103,15 @@ make load tests more
 node scaling test
 add the iam user name to variables
 make the loadbalancers to assecible by terraform (determine loadbalancers)
+
+helm repo add gpu-helm-charts \
+  https://nvidia.github.io/dcgm-exporter/helm-charts
+
+  kubectl create -f https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/master/dcgm-exporter.yaml
+
+helm install \
+    --generate-name \
+    gpu-helm-charts/dcgm-exporter
+
+https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html
+https://github.com/NVIDIA/dcgm-exporter
