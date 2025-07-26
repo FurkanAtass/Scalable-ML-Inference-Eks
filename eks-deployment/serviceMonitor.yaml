@@ -17,3 +17,24 @@ spec:
   namespaceSelector:
     matchNames:
       - default # The namespace(s) where your target service(s) live (your swin-tiny-service)
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dcgm-exporter-service-monitor
+  namespace: default # ServiceMonitor should be in the same namespace as Prometheus Operator watches
+  labels:
+    release: prometheus # This MUST match the release name of your kube-prometheus-stack installation
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dcgm-exporter
+  endpoints:
+  - port:  "metrics" # This must match the targetPort or a named port in your Service definition
+    path: /metrics
+    interval: 15s
+  namespaceSelector:
+    matchNames:
+      - default # The namespace(s) where your target service(s) live (your swin-tiny-service)

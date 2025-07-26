@@ -111,7 +111,7 @@ helm repo add gpu-helm-charts \
   kubectl create -f https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/master/dcgm-exporter.yaml
 
 helm install \
-    --generate-name \
+    dcgm-exporter \
     gpu-helm-charts/dcgm-exporter
 
 https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html
