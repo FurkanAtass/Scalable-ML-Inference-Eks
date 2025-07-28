@@ -1,0 +1,29 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: gpu-scale-trigger
+spec:
+  jobTargetRef:
+    template:
+      spec:
+        restartPolicy: Never
+        containers:
+        - name: pending
+          image: busybox
+          command: ["sleep", "3600"]
+          resources:
+            requests:
+              nvidia.com/gpu: "1"
+            limits:
+              nvidia.com/gpu: 1
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 10
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus-kube-prometheus-prometheus.default.svc.cluster.local:9090
+      metricName: gpu_utilization
+      threshold: "2"
+      query: |
+       avg(DCGM_FI_DEV_GPU_UTIL)

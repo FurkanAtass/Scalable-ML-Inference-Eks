@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: swin-tiny-deployment
   minReplicaCount: 1
-  maxReplicaCount: 10
+  maxReplicaCount: 100
   pollingInterval: 15  # Check every 15 seconds
   cooldownPeriod: 120  # Wait 2 minutes before scaling down
   advanced:
@@ -41,3 +41,11 @@ spec:
         )
       threshold: "0.020"  
     metricType: Value
+  # - type: prometheus
+  #   metadata:
+  #     serverAddress: http://prometheus-kube-prometheus-prometheus.default.svc.cluster.local:9090
+  #     metricName: gpu_utilization
+  #     query: |
+  #        avg(DCGM_FI_DEV_GPU_UTIL)
+  #     threshold: "2"  
+  #   metricType: Value

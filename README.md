@@ -116,3 +116,42 @@ helm install \
 
 https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html
 https://github.com/NVIDIA/dcgm-exporter 
+
+kubectl get svc dcgm-exporter default -o yaml
+
+
+
+# STEPS
+
+1. cd terraform-deployment && terraform init && terraform apply
+
+2. aws eks update-kubeconfig --region us-east-1 --name swin-tiny-eks-cluster
+
+3.  kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+
+4. helm repo add prometheus-community https://prometheus-community.github.io/helm-charts \
+  && helm repo update \
+  && helm install prometheus prometheus-community/kube-prometheus-stack \
+  --set prometheus.service.type=LoadBalancer
+
+5. helm repo add kedacore https://kedacore.github.io/charts \
+  && helm repo update \
+  && helm install keda kedacore/keda
+
+6. helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
+  && helm repo update \
+  && helm install dcgm-exporter gpu-helm-charts/dcgm-exporter
+
+  or alternatively
+
+  kubectl apply -f https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/master/dcgm-exporter.yaml
+
+  Optional: You may check the required info for serviceMonitor by:
+    kubectl get svc dcgm-exporter -o yaml
+    to get port name and selectors
+
+7. cd ../eks-deployment \
+  && kubectl apply -f .
+
+
+
