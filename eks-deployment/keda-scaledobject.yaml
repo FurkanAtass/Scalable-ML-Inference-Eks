@@ -47,5 +47,5 @@ spec:
   #     metricName: gpu_utilization
   #     query: |
   #        avg(DCGM_FI_DEV_GPU_UTIL)
-  #     threshold: "2"  
+  #     threshold: "80"  
   #   metricType: Value

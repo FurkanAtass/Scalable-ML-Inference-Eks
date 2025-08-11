@@ -127,18 +127,48 @@ kubectl get svc dcgm-exporter default -o yaml
 
 2. aws eks update-kubeconfig --region us-east-1 --name swin-tiny-eks-cluster
 
-3.  kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
 
-4. helm repo add prometheus-community https://prometheus-community.github.io/helm-charts \
+3. helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
+    && helm repo update
+
+helm install --wait --generate-name \
+    -n gpu-operator --create-namespace \
+    nvidia/gpu-operator \
+    --version=v25.3.2
+
+kubectl create -n gpu-operator -f time-slicing-config-all.yaml
+
+kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"devicePlugin": {"config": {"name": "time-slicing-config-all", "default": "any"}}}}'
+
+It takes couple of minutes to divide the gpu.
+
+
+4. ROLE_ARN=$(terraform output -raw cluster_autoscaler_role_arn)
+
+helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
+  --namespace kube-system --create-namespace \
+  --set autoDiscovery.clusterName=swin-tiny-eks-cluster \
+  --set awsRegion=us-east-1 \
+  --set rbac.serviceAccount.create=true \
+  --set rbac.serviceAccount.name=cluster-autoscaler \
+  --set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${ROLE_ARN}"
+
+5. gerekli olmayabilir.
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+
+6. helm repo add prometheus-community https://prometheus-community.github.io/helm-charts \
   && helm repo update \
   && helm install prometheus prometheus-community/kube-prometheus-stack \
   --set prometheus.service.type=LoadBalancer
 
-5. helm repo add kedacore https://kedacore.github.io/charts \
+7. helm repo add kedacore https://kedacore.github.io/charts \
   && helm repo update \
   && helm install keda kedacore/keda
 
-6. helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
+8. gerek olmayabilir
+helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
   && helm repo update \
   && helm install dcgm-exporter gpu-helm-charts/dcgm-exporter
 

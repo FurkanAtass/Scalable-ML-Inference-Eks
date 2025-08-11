@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: swin-tiny-deployment
 spec:
-  replicas: 2
+  replicas: 6
   selector: 
     matchLabels:
       app: swin-tiny-app
@@ -17,3 +17,8 @@ spec:
         image: furkanatass/swin-tiny:v3
         ports:
         - containerPort: 8000
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            nvidia.com/gpu: 1
