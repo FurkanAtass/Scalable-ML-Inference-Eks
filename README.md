@@ -155,6 +155,7 @@ helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
   --set rbac.serviceAccount.name=cluster-autoscaler \
   --set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${ROLE_ARN}"
 
+to scale down, it takes around 35 minutes
 5. gerekli olmayabilir.
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
 
@@ -182,6 +183,3 @@ helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
 
 7. cd ../eks-deployment \
   && kubectl apply -f .
-
-
-
