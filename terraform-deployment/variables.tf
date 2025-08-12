@@ -1,3 +1,7 @@
+########################
+# Variables
+########################
+
 variable "cluster_name" {
   type        = string
   default     = "swin-tiny-eks-cluster"

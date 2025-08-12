@@ -127,25 +127,7 @@ kubectl get svc dcgm-exporter default -o yaml
 
 2. aws eks update-kubeconfig --region us-east-1 --name swin-tiny-eks-cluster
 
-
-3. helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
-    && helm repo update
-
-helm install --wait --generate-name \
-    -n gpu-operator --create-namespace \
-    nvidia/gpu-operator \
-    --version=v25.3.2
-
-kubectl create -n gpu-operator -f time-slicing-config-all.yaml
-
-kubectl patch clusterpolicies.nvidia.com/cluster-policy \
-    -n gpu-operator --type merge \
-    -p '{"spec": {"devicePlugin": {"config": {"name": "time-slicing-config-all", "default": "any"}}}}'
-
-It takes couple of minutes to divide the gpu.
-
-
-4. ROLE_ARN=$(terraform output -raw cluster_autoscaler_role_arn)
+3. ROLE_ARN=$(terraform output -raw cluster_autoscaler_role_arn)
 
 helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
   --namespace kube-system --create-namespace \
@@ -156,8 +138,22 @@ helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
   --set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${ROLE_ARN}"
 
 to scale down, it takes around 35 minutes
-5. gerekli olmayabilir.
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+
+4. helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
+    && helm repo update
+
+helm install --wait --generate-name \
+    -n gpu-operator --create-namespace \
+    nvidia/gpu-operator \
+    --version=v25.3.2
+
+kubectl create -n gpu-operator -f ../eks-deployment/time-slicing-config-all.yaml
+
+kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"devicePlugin": {"config": {"name": "time-slicing-config-all", "default": "any"}}}}'
+
+It takes couple of minutes to divide the gpu.
 
 6. helm repo add prometheus-community https://prometheus-community.github.io/helm-charts \
   && helm repo update \
@@ -168,8 +164,17 @@ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.
   && helm repo update \
   && helm install keda kedacore/keda
 
-8. gerek olmayabilir
-helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
+
+
+7. cd ../eks-deployment \
+  && kubectl apply -f .
+
+---
+
+dcgm exporter not work with time sliced gpus
+
+gerek olmayabilir
+helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts \
   && helm repo update \
   && helm install dcgm-exporter gpu-helm-charts/dcgm-exporter
 
@@ -181,5 +186,7 @@ helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
     kubectl get svc dcgm-exporter -o yaml
     to get port name and selectors
 
-7. cd ../eks-deployment \
-  && kubectl apply -f .
+
+reach from outside
+add token verification to docker image
+deploy helm products to different namespaces

@@ -41,11 +41,3 @@ spec:
         )
       threshold: "0.020"  
     metricType: Value
-  # - type: prometheus
-  #   metadata:
-  #     serverAddress: http://prometheus-kube-prometheus-prometheus.default.svc.cluster.local:9090
-  #     metricName: gpu_utilization
-  #     query: |
-  #        avg(DCGM_FI_DEV_GPU_UTIL)
-  #     threshold: "80"  
-  #   metricType: Value
