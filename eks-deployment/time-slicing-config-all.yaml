@@ -3,6 +3,7 @@ kind: ConfigMap
 metadata:
   name: time-slicing-config-all
 data:
+# Configure GPU time-slicing to allow 16 pods to share a single GPU
   any: |-
     version: v1
     flags:
@@ -11,4 +12,4 @@ data:
       timeSlicing:
         resources:
         - name: nvidia.com/gpu
-          replicas: 4
+          replicas: 16 

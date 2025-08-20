@@ -16,14 +16,14 @@ spec:
     horizontalPodAutoscalerConfig:
       behavior:
         scaleUp:
-          stabilizationWindowSeconds: 120  # Wait 1 minute before scaling up again
+          stabilizationWindowSeconds: 120  # Wait 2 minute before scaling up again
           policies:
           - type: Percent
             value: 100
             periodSeconds: 15
           selectPolicy: Max
         scaleDown:
-          stabilizationWindowSeconds: 120  # Wait 1 minute before scaling down (reduced from default)
+          stabilizationWindowSeconds: 120  # Wait 2 minute before scaling down
           policies:
           - type: Percent
             value: 50

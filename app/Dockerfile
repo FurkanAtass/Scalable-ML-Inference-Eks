@@ -8,6 +8,7 @@ RUN apt update && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
     export PATH="/root/.local/bin:$PATH" && \
     uv sync && \
+    # Clean up apt cache and remove package lists to minimize final image size
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

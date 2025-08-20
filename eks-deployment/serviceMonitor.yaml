@@ -1,4 +1,3 @@
-# deployment/serviceMonitor.yaml (or wherever you put it)
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -9,11 +8,11 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: swin-tiny-app # This should match the labels of your swin-tiny-service
+      app: swin-tiny-app # This should match the labels of your service
   endpoints:
   - port: "swin-tiny-port" # This must match the targetPort or a named port in your Service definition
     path: /metrics
     interval: 15s
   namespaceSelector:
     matchNames:
-      - default # The namespace(s) where your target service(s) live (your swin-tiny-service)
+      - default # The namespace(s) where your target service(s) live

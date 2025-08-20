@@ -16,8 +16,3 @@ spec:
     port: 8000
     targetPort: 8000
   type: LoadBalancer
-  # Ensure proper load balancing May not be needed
-  # sessionAffinity: None  # Disable session affinity
-  # sessionAffinityConfig:
-  #   clientIP:
-  #     timeoutSeconds: 0  # No timeout for session affinity 
