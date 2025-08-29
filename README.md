@@ -30,6 +30,13 @@ This repository provisions an AWS EKS cluster with GPU nodes and deploys a FastA
 
 ---
 
+## Repository Structure
+- `app/`: FastAPI app, `Dockerfile`, `pyproject.toml`, `run.sh`, test client
+- `kubernetes/`: Deployment, Service, ServiceMonitor, KEDA ScaledObject, time-slicing config
+- `terraform/`: VPC, EKS, IRSA for Cluster Autoscaler, security groups, outputs
+
+---
+
 ## Build and Push the Inference Image
 The app code and `Dockerfile` are in `app/`. The image uses `uv` to install Python deps and runs `uvicorn`.
 
@@ -217,10 +224,3 @@ terraform destroy
 - Prometheus not scraping app: confirm `ServiceMonitor` `release` label matches your Prometheus release name (`prometheus`) and `Service` labels/ports match the monitor selector.
 - Scaling not triggered: verify Prometheus query results in the Prometheus UI and that KEDA has access to the Prometheus service address configured in `ScaledObject`.
 - Slow scale-down: Kubernetes HPA/KEDA stabilization windows and Cluster Autoscaler timings can delay downscaling.
-
----
-
-## Repository Structure
-- `app/`: FastAPI app, `Dockerfile`, `pyproject.toml`, `run.sh`, test client
-- `kubernetes/`: Deployment, Service, ServiceMonitor, KEDA ScaledObject, time-slicing config
-- `terraform/`: VPC, EKS, IRSA for Cluster Autoscaler, security groups, outputs
