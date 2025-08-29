@@ -159,6 +159,23 @@ Threshold (default): `0.020` seconds. Adjust `threshold`, `minReplicaCount`, and
 
 ---
 
+## Pod placement (packing)
+Pack replicas onto the same node so nodes can drain and scale down faster when load drops, while keeping latency steady. Use a strong preferred `podAffinity` (keep it preferred, not required) to co-locate replicas on the same hostname.
+
+```yaml
+affinity:
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            app: swin-tiny-app
+```
+
+---
+
 ## Load Testing (Optional)
 A simple async load test script is provided at `app/test.py`.
 ```bash
