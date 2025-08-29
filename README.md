@@ -1,134 +1,72 @@
-# Scalable-Deployment
+## Scalable ML Inference on EKS (GPU + KEDA + Prometheus)
 
+This repository provisions an AWS EKS cluster with GPU nodes and deploys a FastAPI inference service running a Swin-Tiny image classification model. It enables horizontal scaling based on custom Prometheus metrics via KEDA and supports GPU time-slicing using NVIDIA GPU Operator to scale nodes.
 
-* uv sync -> update environment and activate
-* uv add <package name>
-* uv remove <package name>
+### Key Features
+- **GPU-backed inference**: PyTorch `swin_t` model served with FastAPI/Uvicorn
+- **Autoscaling**: KEDA scales pods using custom latency metric from Prometheus
+- **Node autoscaling**: Cluster Autoscaler scales GPU nodes
+- **Observability**: `/metrics` endpoint scraped by Prometheus and ServiceMonitor
+- **GPU sharing**: Optional time-slicing to run multiple pods per GPU
 
+---
 
-## Docker
+## Architecture Overview
+- Terraform creates VPC, EKS (managed node group with `g4dn.xlarge`), and security rules.
+- Helm installs NVIDIA GPU Operator, Prometheus Stack, KEDA, and Cluster Autoscaler.
+- Kubernetes manifests deploy the app `Deployment`, `Service` (LoadBalancer), `ServiceMonitor`, and KEDA `ScaledObject`.
 
-* docker push <user name>>/<image name>:<tagname>
+---
 
-## Minikube
+## Prerequisites
+- AWS account and credentials configured (Administrator or equivalent)
+- macOS/Linux shell with the following installed:
+  - `aws` CLI
+  - `terraform`
+  - `kubectl`
+  - `helm`
+  - Docker and a container registry account (Docker Hub or ECR)
+- GPU quota in the chosen region (defaults to `us-east-1`) for `g4dn.xlarge`
 
-minikube start -n 2 --memory 4400
+---
 
-minikube service <service-name> --url 
+## Build and Push the Inference Image
+The app code and `Dockerfile` are in `app/`. The image uses `uv` to install Python deps and runs `uvicorn`.
 
-minikube tunnel
+```bash
+cd app
+# Build
+docker build -t <registry>/<repo>:<tag> .
 
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# Login and push (Docker Hub example)
+docker login
+docker push <registry>/<repo>:<tag>
+```
 
-helm repo update
+Update the image reference in `kubernetes/deployment.yaml` under `spec.template.spec.containers[0].image`.
 
-helm install prometheus prometheus-community/kube-prometheus-stack \
-  --set prometheus.service.type=LoadBalancer  
+---
 
-kubectl port-forward services/prometheus-kube-prometheus-prometheus 9091:9090
+## Provision EKS with Terraform
+```bash
+cd terraform
+terraform init
+terraform apply
 
-where 9092 is reached from localhost and 80 is the shown port for service (kubectl get svc)
-
-avg(rate(http_request_duration_seconds_sum[2m]) / rate(http_request_duration_seconds_count[2m]))
-(avg(histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[2m]))))
-
-avg(
-  rate(http_request_duration_seconds_sum[2m])
-  /
-  clamp_min(rate(http_request_duration_seconds_count[2m]), 1)
-)
-
-helm repo add kedacore https://kedacore.github.io/charts  
-helm repo update
-helm install keda kedacore/keda
-
-
-## AWS CLI
-
-https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
-
-### Set up cli
-https://docs.aws.amazon.com/eks/latest/userguide/install-awscli.html
-
-## EKSCTL 
-
-https://eksctl.io/installation/
-
-
-
-
-## EKS
-
-1. create IAM role
-2. create cluster from console
-3. create kubeconfig
+# Update kubeconfig
 aws eks update-kubeconfig --region us-east-1 --name swin-tiny-eks-cluster
+```
+Outputs include the IAM role ARN for Cluster Autoscaler IRSA.
 
- kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+---
 
-4. cluster > access > IAM access entries > create access entry > enter IAM role generated
-5. cluster > access > IAM access entries > click your IAM arn:aws:iam::705121141507:user/FurkanIAM 
-      > Access policies > add access policy > add AmazonEKSAdminPolicy and AmazonEKSClusterAdminPolicy
+## Install Cluster Autoscaler (IRSA)
+```bash
+# Capture the IRSA role ARN created by Terraform
+ROLE_ARN=$(terraform output -raw cluster_autoscaler_role_arn)
 
-
-## Terraform
-
-Install terraform cli from
-  https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
-
-terraform fmt -> to chech the file formats
-terraform init -> reads all the files and download the resources from terraform registry and save to files
-terraform validate -> validates the files syntax etc.
-terraform plan -> check what will be the impact of the execution
-terraform apply -> apply the file and ask to approve
-terraform destroy -> destroy all resources
-
-terraform keeps the states for us in .tfstate file
-
-terraform provisioners used to execute scripts, add files for yout infrastructure. their state will not handled by terraform.
-
-For you services in terraform, check the requirements for the aws and choose the matched version for all services and their versions.
-
-helm uninstall prometheus and delete the k8s services before terraform destroy
-
-# TODO
-remove the single nat gateway which may prevent the pods that has pending state
-make prometheus ui reachable from outside the kubectl port-forward
-make the access policies from terraform
-terraform destroy not working
-
-add auth to endpoint
-maybe deploy the cluster to aws ecr
-make load tests more
-node scaling test
-
-add the iam user name to variables
-make the loadbalancers to assecible by terraform (determine loadbalancers) may only needed for CI/CD pipeline
-
-helm repo add gpu-helm-charts \
-  https://nvidia.github.io/dcgm-exporter/helm-charts
-
-  kubectl create -f https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/master/dcgm-exporter.yaml
-
-helm install \
-    dcgm-exporter \
-    gpu-helm-charts/dcgm-exporter
-
-https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html
-https://github.com/NVIDIA/dcgm-exporter 
-
-kubectl get svc dcgm-exporter default -o yaml
-
-
-
-# STEPS
-
-1. cd terraform-deployment && terraform init && terraform apply
-
-2. aws eks update-kubeconfig --region us-east-1 --name swin-tiny-eks-cluster
-
-3. ROLE_ARN=$(terraform output -raw cluster_autoscaler_role_arn)
-
+# Add autoscaler repo and install
+helm repo add autoscaler https://kubernetes.github.io/autoscaler && helm repo update
 helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
   --namespace kube-system --create-namespace \
   --set autoDiscovery.clusterName=swin-tiny-eks-cluster \
@@ -136,57 +74,136 @@ helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
   --set rbac.serviceAccount.create=true \
   --set rbac.serviceAccount.name=cluster-autoscaler \
   --set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${ROLE_ARN}"
-
-to scale down, it takes around 35 minutes
-
-4. helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
-    && helm repo update
-
-helm install --wait --generate-name \
-    -n gpu-operator --create-namespace \
-    nvidia/gpu-operator \
-    --version=v25.3.2
-
-kubectl create -n gpu-operator -f ../eks-deployment/time-slicing-config-all.yaml
-
-kubectl patch clusterpolicies.nvidia.com/cluster-policy \
-    -n gpu-operator --type merge \
-    -p '{"spec": {"devicePlugin": {"config": {"name": "time-slicing-config-all", "default": "any"}}}}'
-
-It takes couple of minutes to divide the gpu.
-
-6. helm repo add prometheus-community https://prometheus-community.github.io/helm-charts \
-  && helm repo update \
-  && helm install prometheus prometheus-community/kube-prometheus-stack \
-  --set prometheus.service.type=LoadBalancer
-
-7. helm repo add kedacore https://kedacore.github.io/charts \
-  && helm repo update \
-  && helm install keda kedacore/keda
-
-
-
-7. cd ../eks-deployment \
-  && kubectl apply -f .
+```
+Note: Scale-down decisions may take ~30 minutes.
 
 ---
 
-dcgm exporter not work with time sliced gpus
+## Install NVIDIA GPU Operator
+```bash
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
+helm install --wait --generate-name \
+  -n gpu-operator --create-namespace \
+  nvidia/gpu-operator \
+  --version=v25.3.2
+```
 
-gerek olmayabilir
-helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts \
-  && helm repo update \
-  && helm install dcgm-exporter gpu-helm-charts/dcgm-exporter
+### Optional: Enable GPU Time-Slicing
+This lets multiple pods share a single GPU.
+```bash
+# Apply time-slicing config map
+kubectl apply -f kubernetes/time-slicing-config-all.yaml -n gpu-operator
 
-  or alternatively
+# Patch cluster policy to use it
+kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+  -n gpu-operator --type merge \
+  -p '{"spec": {"devicePlugin": {"config": {"name": "time-slicing-config-all", "default": "any"}}}}'
+```
+It may take a few minutes for the configuration to take effect.
 
-  kubectl apply -f https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/master/dcgm-exporter.yaml
+---
 
-  Optional: You may check the required info for serviceMonitor by:
-    kubectl get svc dcgm-exporter -o yaml
-    to get port name and selectors
+## Install Prometheus Stack
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --set prometheus.service.type=LoadBalancer
+```
+`kubernetes/serviceMonitor.yaml` is configured to let Prometheus scrape the app’s `/metrics` endpoint.
 
+---
 
-reach from outside
-add token verification to docker image
-deploy helm products to different namespaces
+## Install KEDA
+```bash
+helm repo add kedacore https://kedacore.github.io/charts && helm repo update
+helm install keda kedacore/keda
+```
+
+---
+
+## Deploy the Application Manifests
+```bash
+cd ..
+kubectl apply -f kubernetes/
+```
+This applies the `Deployment`, `Service` (type `LoadBalancer` on port 8000), `ServiceMonitor`, and `ScaledObject`.
+
+---
+
+## Application API
+- `POST /predict`: multipart file upload under form-key `file`; returns predicted class
+- `GET /metrics`: Prometheus metrics
+- `GET /health`: health check
+
+Example request with `curl`:
+```bash
+curl -X POST \
+  -F "file=@/path/to/image.jpg" \
+  http://<APP_LOADBALANCER_DNS>:8000/predict
+```
+
+---
+
+## Autoscaling with KEDA
+The `ScaledObject` (`kubernetes/keda-scaledobject.yaml`) evaluates average request duration over a 2-minute window and scales pods between 1 and 100 replicas.
+
+PromQL used:
+```promql
+avg(
+  rate(http_request_duration_seconds_sum[2m])
+  /
+  clamp_min(rate(http_request_duration_seconds_count[2m]), 1)
+)
+```
+Threshold (default): `0.020` seconds. Adjust `threshold`, `minReplicaCount`, and `maxReplicaCount` as needed.
+
+---
+
+## Load Testing (Optional)
+A simple async load test script is provided at `app/test.py`.
+```bash
+# Edit API_URL in app/test.py to your app LoadBalancer DNS
+uv run python app/test.py 50 5   # 50 concurrent requests, 5 rounds
+```
+
+---
+
+## Configuration
+- Region/cluster/VPC names can be adjusted in `terraform/variables.tf`
+- Node group instance type in `terraform/eks.tf` (`g4dn.xlarge` by default)
+- App image in `kubernetes/deployment.yaml`
+- Service type and ports in `kubernetes/service.yaml`
+- Prometheus access: Terraform opens 9090 to the world by default in `terraform/security_group_rules.tf` (tighten for production)
+
+---
+
+## Cleanup
+```bash
+# Remove Helm releases (optional order)
+helm uninstall keda
+helm uninstall prometheus
+helm -n gpu-operator uninstall <gpu-operator-release-name>
+helm -n kube-system uninstall cluster-autoscaler
+
+# Delete k8s app resources
+kubectl delete -f kubernetes/
+
+# Destroy infrastructure
+cd terraform
+terraform destroy
+```
+
+---
+
+## Troubleshooting
+- Pods stuck Pending: ensure GPU operator is installed and nodes are GPU-capable; check `nvidia.com/gpu` resource requests.
+- Prometheus not scraping app: confirm `ServiceMonitor` `release` label matches your Prometheus release name (`prometheus`) and `Service` labels/ports match the monitor selector.
+- Scaling not triggered: verify Prometheus query results in the Prometheus UI and that KEDA has access to the Prometheus service address configured in `ScaledObject`.
+- Slow scale-down: Kubernetes HPA/KEDA stabilization windows and Cluster Autoscaler timings can delay downscaling.
+
+---
+
+## Repository Structure
+- `app/`: FastAPI app, `Dockerfile`, `pyproject.toml`, `run.sh`, test client
+- `kubernetes/`: Deployment, Service, ServiceMonitor, KEDA ScaledObject, time-slicing config
+- `terraform/`: VPC, EKS, IRSA for Cluster Autoscaler, security groups, outputs
